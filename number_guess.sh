@@ -23,7 +23,6 @@ fi
 
 # Generate random number between 1 and 1000
 SECRET_NUMBER=$(( RANDOM % 1000 + 1 ))
-echo "(debug) Secret number: $SECRET_NUMBER"
 echo "Guess the secret number between 1 and 1000:"
 NUMBER_OF_GUESSES=0
 
