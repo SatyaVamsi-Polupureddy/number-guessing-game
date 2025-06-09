@@ -1,16 +1,16 @@
 #!/bin/bash
 
-# Connect to database
+# Set up PostgreSQL connection command
 PSQL="psql --username=freecodecamp --dbname=number_guess -t --no-align -c"
 
-# Ask for username
+# Ask for the username
 echo "Enter your username:"
 read USERNAME
 
-# Get user_id from DB
+# Get user_id if exists
 USER_ID=$($PSQL "SELECT user_id FROM users WHERE username='$USERNAME'")
 
-# If user doesn't exist, insert them
+# Check if user is new
 if [[ -z $USER_ID ]]; then
   echo "Welcome, $USERNAME! It looks like this is your first time here."
   $PSQL "INSERT INTO users(username) VALUES('$USERNAME')"
@@ -21,24 +21,29 @@ else
   echo "Welcome back, $USERNAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
 fi
 
-# Generate random number
-SECRET=$(( RANDOM % 1000 + 1 ))
+# Generate random number between 1 and 1000
+SECRET_NUMBER=$(( RANDOM % 1000 + 1 ))
+echo "(debug) Secret number: $SECRET_NUMBER"
 echo "Guess the secret number between 1 and 1000:"
 NUMBER_OF_GUESSES=0
 
 # Loop until correct guess
 while true; do
   read GUESS
-  ((NUMBER_OF_GUESSES++))
 
   if ! [[ $GUESS =~ ^[0-9]+$ ]]; then
     echo "That is not an integer, guess again:"
-  elif (( GUESS < SECRET )); then
+    continue
+  fi
+
+  ((NUMBER_OF_GUESSES++))
+
+  if (( GUESS < SECRET_NUMBER )); then
     echo "It's higher than that, guess again:"
-  elif (( GUESS > SECRET )); then
+  elif (( GUESS > SECRET_NUMBER )); then
     echo "It's lower than that, guess again:"
   else
-    echo "You guessed it in $NUMBER_OF_GUESSES tries. The secret number was $SECRET. Nice job!"
+    echo "You guessed it in $NUMBER_OF_GUESSES tries. The secret number was $SECRET_NUMBER. Nice job!"
     $PSQL "INSERT INTO games(user_id, guesses) VALUES($USER_ID, $NUMBER_OF_GUESSES)"
     break
   fi
